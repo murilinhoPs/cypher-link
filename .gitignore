@@ -1,0 +1,10 @@
+.DS_Store
+.cpcache/
+.shadow-cljs/
+.clj-kondo/.cache/
+.lsp/
+node_modules/
+data/jmdict/
+resources/public/js/*
+!resources/public/js/.gitkeep
+.clj-kondo/
