@@ -1,0 +1,10 @@
+{:source-paths ["src"]
+ :dependencies [[com.pitch/uix.core "1.4.9"]
+                [com.pitch/uix.dom  "1.4.9"]]
+ :builds
+ {:app
+  {:target     :browser
+   :output-dir "resources/public/js"
+   :asset-path "/js"
+   :modules    {:main {:init-fn cypher.core/init!}}
+   :devtools   {:after-load cypher.core/init!}}}}
