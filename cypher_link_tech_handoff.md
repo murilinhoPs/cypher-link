@@ -200,7 +200,7 @@ Sem biblioteca de router. Roteamento via `js/window.location.hash`:
 
 ## 05 — Módulos — Implementação
 
-### `cipher.cljs` — lógica da cifra
+### `cipher.clj` — lógica da cifra
 
 Zero interop JS — usa apenas `clojure.string`. `str/index-of` retorna `nil` (não `-1`) quando char não está no alfabeto, então o guard usa `nil?`. Param `kw` em vez de `keyword` para não shadowear o built-in `clojure.core/keyword`.
 
