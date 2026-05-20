@@ -39,37 +39,3 @@ def cipher(text: str, keyword: str) -> str:
     return "".join(result)
 
 print(cipher("Hello, World!", "gato"))
-
-#   PARA CADA letra EM lower_keyword (em minúsculo):
-
-#     SE letra não está no ALPHABET || SE letra já está em vistos:
-#       continue -> pula para próxima
-
-#     adiciona letra em vistos
-#     índice = posição da letra no ALPHABET   // "a"=0, "b"=1 ... "z"=25, ALPHABET.index(letra)
-
-#     SE índice == 25:                        // caso especial: "z" não tem próxima
-#       parceira = ALPHABET[24] = "y"
-#     SENÃO:
-#       parceira = ALPHABET[índice+1]  // "a"→"b", "n"→"o", "s"→"t" (próxima letra no alfabeto)
-
-#     SE letra NÃO está em pares AND parceira NÃO está em pares:           // garante que ninguém entra em dois pares
-#       pares[letra]    = parceira
-#       pares[parceira] = letra               // bidirecional: os dois sentidos de uma vez
-
-#   RETORNA pares
-
-
-# FUNÇÃO cipher(texto, keyword):
-
-#   pares = build_pair_map(keyword)
-#   resultado = ""
-
-#   PARA CADA letra EM texto (em minúsculo):
-
-#     SE letra existe em pares:
-#       resultado += pares[letra]             // troca pela parceira
-#     SENÃO:
-#       resultado += letra                    // passa igual (espaço, número, pontuação)
-
-#   RETORNA resultado
