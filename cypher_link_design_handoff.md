@@ -1,770 +1,587 @@
-# CYPHER_LINK — Design Handoff v2.0
+# CYPHER_LINK v2 — Design Handoff
 
-```
-// DESIGN DOSSIER — CLASSIFIED
-Aesthetic: CYBER RUNNER · Platform: Desktop-wide + Mobile · Mode: DARK ONLY
+```text
+// VISUAL SYSTEM & UX SPECIFICATION
+Product label: CYPHER_LINK v2.0
+Reference revision: Sites version 5
+Reference URL: https://cypher-link-v2.murilinhorps.chatgpt.site/
+Visual baseline: 3 responsive reference boards (Transmitir, Receber, Protocolo)
 ```
 
-| Campo | Valor |
+| Campo | Especificação |
 |---|---|
-| Projeto | CYPHER_LINK — Cyberpunk Message Cipher |
-| Versão | 2.0 — atualizado com CSS final + referência visual |
-| Aesthetic | Cyber Runner — Edgerunners Yellow + Cyan + Pink |
-| Plataforma | Desktop wide (1080px) + Mobile responsivo, PWA instalável |
-| Tema | Dark only — sem light mode |
-| Idioma UI | Inglês (estética de terminal cyberpunk) |
-| Fontes | Share Tech Mono (título) + JetBrains Mono (corpo) |
+| Produto | CYPHER_LINK — Cyberpunk Message Cipher |
+| Interface | Dashboard operacional full-screen |
+| Plataformas | Desktop, tablet e mobile web |
+| Tema | Cyberpunk noir, terminal sci-fi e telemetria diegética |
+| Idioma | Português do Brasil com labels operacionais em inglês |
+| Documento | Especificação visual e comportamental pronta para implementação |
+
+### Referências visuais normativas
+
+As três pranchas abaixo são a fonte visual final deste handoff. Em caso de conflito entre texto legado e imagem, prevalece a prancha correspondente, respeitando as regras de acessibilidade deste documento.
+
+| Módulo | Arquivo de referência |
+|---|---|
+| Transmitir | `doc/visual-references/cypher-link-transmit-reference.png` |
+| Receber | `doc/visual-references/cypher-link-receive-reference.png` |
+| Protocolo | `doc/visual-references/cypher-link-protocol-reference.png` |
+
+Cada arquivo apresenta desktop à esquerda e mobile à direita. A moldura externa arredondada do telefone pertence somente à apresentação da prancha; a interface implementada continua com cantos retos.
 
 ---
 
-## 01 — Aesthetic Direction
+## 01 — Visão do produto
 
-### Conceito central
+CYPHER_LINK simula uma estação de comunicação segura para campanhas de RPG cyberpunk. O produto cifra e restaura mensagens localmente, gera links com payload e explica seu protocolo sem apresentar a cifra como segurança real.
 
-CYPHER_LINK não é um webapp genérico de criptografia. É uma **ferramenta diegética** — parece existir dentro da ficção da campanha de RPG. O design transmite que o usuário está acessando um terminal de hacker em um mundo cyberpunk noir: fundo quase negro, atmosfera criada por gradientes radiais sutis nos cantos, e uma paleta de três cores de acento com papéis distintos e bem definidos.
+### Princípios
 
-A versão 2.0 abandona o terminal de coluna única estreita e adota um **layout de duas colunas lado a lado** em desktop — INPUT à esquerda, OUTPUT à direita — com o terminal expandido até `1080px`. O título usa `Share Tech Mono` para diferenciação visual máxima do corpo.
+- **Operacional:** interface parece ferramenta de campo, não landing page.
+- **Diegético:** labels, índices, relay e telemetria pertencem à narrativa.
+- **Legível:** efeitos neon, ruído e scanlines nunca competem com conteúdo.
+- **Local first:** keyword permanece no dispositivo e não acompanha o link.
+- **Três domínios cromáticos:** amarelo = ação, cyan = dados, pink = risco.
+- **Cantos técnicos:** sem cards arredondados; recortes diagonais substituem radius.
+- **Responsivo por reorganização:** desktop usa sidebar; mobile usa sub-header horizontal.
 
-### Mood keywords
+### Arquitetura de informação
 
-- **CYBER RUNNER** — Edgerunners yellow como cor de ação; cyan para dados; pink para perigo
-- **ATMOSFÉRICO** — fundo com gradientes radiais coloridos nos cantos, não flat preto
-- **DIEGÉTICO** — parece uma ferramenta real da campanha, não um app moderno
-- **DUAS ZONAS CLARAS** — input panel amarelo-bordado vs output panel cyan-bordado
-- **PARANÓICO** — warning em pink pulsante no footer, status de node online
-- **ZERO DECORAÇÃO VAZIA** — todo elemento tem função ou reforça a narrativa
+O produto possui três módulos persistentes:
 
-### Mudanças da v1 → v2
-
-| Aspecto | v1 | v2 |
-|---|---|---|
-| Layout | Coluna única, 640px | Duas colunas side-by-side, 1080px |
-| Paleta primária | Verde terminal `#00FF88` | Amarelo Edgerunners `#FFD400` |
-| Título | JetBrains Mono bold | Share Tech Mono (display font) |
-| Fundo | Preto flat | Gradientes radiais nos cantos |
-| Painéis | Sem separação visual | Input panel (amarelo) vs Output panel (cyan) |
-| Status | Ausente | Badge "SECURE NODE ONLINE" com bolinha verde |
-| Footer | Simples | Warning em pink + `// END OF LINE` em amarelo |
-
-### Anti-patterns — o que NÃO fazer
-
-- ❌ Gradientes coloridos genéricos em área de conteúdo (apenas nos cantos do body)
-- ❌ Cards com bordas arredondadas e sombras suaves
-- ❌ Fontes sans-serif modernas (Inter, Roboto, SF Pro)
-- ❌ Ícones SVG decorativos sem função
-- ❌ Usar amarelo e cyan e pink no mesmo elemento — cada cor tem seu domínio
-- ❌ Qualquer elemento que quebre a ilusão de "terminal real"
+1. **TRANSMITIR / TX** — compor mensagem, aplicar keyword, cifrar e compartilhar.
+2. **RECEBER / RX** — inserir payload, aplicar keyword e restaurar mensagem.
+3. **PROTOCOLO / ::** — explicar cifra simétrica, link sem chave e limite OPSEC.
 
 ---
 
-## 02 — Color Palette
+## 02 — Design tokens
 
-### Backgrounds
-
-| Token | Hex | Uso |
-|---|---|---|
-| `--bg` | `#080A0F` | Fundo global — quase negro, levemente azulado |
-| `--surface` | `#0F111A` | Fundo do terminal e painéis |
-| `--border` | `#1B2230` | Bordas neutras, separadores, grid |
-
-O fundo não é flat — recebe **quatro gradientes radiais** que criam atmosfera:
+### Cores fundamentais
 
 ```css
-body {
-  background:
-    radial-gradient(circle at top left,    rgba(255,212,0,  0.075), transparent 28%),
-    radial-gradient(circle at bottom right,rgba(5,217,232,  0.085), transparent 36%),
-    radial-gradient(circle at 80% 12%,     rgba(255,42,109, 0.05),  transparent 24%),
-    radial-gradient(circle at 12% 85%,     rgba(5,217,232,  0.055), transparent 26%),
-    var(--bg);
+:root {
+  --bg:             #07090E;
+  --bg-deep:        #040508;
+  --surface:        #0D1119;
+  --surface-raised: #111722;
+  --border:         #202A39;
+  --border-soft:    #6277922E;
+
+  --yellow:         #FFD400;
+  --yellow-soft:    #FFD4001F;
+  --pink:           #FF2A6D;
+  --pink-soft:      #FF2A6D1C;
+  --cyan:           #05D9E8;
+  --cyan-soft:      #05D9E817;
+  --green:          #00FF88;
+  --green-soft:     #00FF8814;
+
+  --text:           #E4E2D8;
+  --text-muted:     #7E8B9D;
+  --text-faint:     #495568;
 }
 ```
 
-O terminal em si também recebe gradiente sutil interno:
+### Semântica de cor
+
+| Token | Papel |
+|---|---|
+| `--yellow` | Marca, módulo ativo, CTA principal, keyword e foco primário |
+| `--cyan` | Payload, outputs, links, ações secundárias e dados recebidos |
+| `--pink` | Purge, warnings, erros, OPSEC e estados perigosos |
+| `--green` | Node online, relay ativo, signal ready e conclusão válida |
+| `--text` | Títulos, mensagem original e conteúdo principal |
+| `--text-muted` | Descrições, labels secundárias e instruções |
+| `--text-faint` | Índices, atalhos, metadados e elementos inativos |
+
+Nunca usar dois acentos concorrentes na mesma ação. Indicadores podem combinar label neutra com valor semântico colorido.
+
+### Superfícies
+
+| Superfície | Valor |
+|---|---|
+| App | `--bg` com grid técnico de 42×42px |
+| Topbar | `rgba(7,9,14,.84)` desktop; `rgba(7,9,14,.96)` mobile |
+| Sidebar | `rgba(8,11,17,.70)` |
+| Painel | `rgba(12,16,24,.90)` + gradiente branco de 2% |
+| Campo | `rgba(3,5,9,.65–.70)` |
+| Footer | `--bg-deep` |
+
+O background do app combina:
+
+- radial amarelo no canto superior esquerdo: `rgba(255,212,0,.07)`;
+- radial cyan à direita: `rgba(5,217,232,.055)`;
+- duas linhas de grid com opacidade de 1%;
+- camada de ruído visual passiva.
+
+### Tipografia
+
+A aplicação carrega variáveis Geist Sans e Geist Mono. O contrato de produção deve mapear explicitamente:
 
 ```css
-.terminal {
-  background:
-    linear-gradient(135deg, rgba(255,212,0,  0.032), transparent 32%),
-    linear-gradient(315deg, rgba(5,217,232,  0.035), transparent 34%),
-    linear-gradient(45deg,  rgba(5,217,232,  0.026), transparent 38%),
-    var(--surface);
-}
+--font-ui:   "Geist Sans", system-ui, sans-serif;
+--font-mono: "Geist Mono", "JetBrains Mono", monospace;
 ```
 
-### Accents — três cores, três papéis, domínios separados
+| Elemento | Fonte | Tamanho desktop | Peso / tracking |
+|---|---|---:|---|
+| Marca `CYPHER_LINK_` | UI | 17px | 770 / `0.10em` |
+| Versão | Mono | 9px | 400 / `0.08em` |
+| Título do módulo | UI | `clamp(30px,4vw,48px)` | 730 / `0.035em` |
+| Descrição | UI | 12px | 400 / line-height 1.65 |
+| Eyebrow | Mono | 10px | 400 / `0.17em` |
+| Nav item | Mono | 11px | 400 / `0.08em` |
+| Panel kicker | Mono | 9px | 400 / `0.13em` |
+| Field label | Mono | 8px | 400 / `0.16em` |
+| Textarea | UI | 13px | 400 / line-height 1.75 |
+| Keyword | Mono | 11px | 400 |
+| Botões principais | Mono | 9px | 750 / `0.10em` |
+| Telemetria | Mono | 7–10px | 400 / `0.08–0.10em` |
 
-| Token | Hex | Nome | Domínio exclusivo |
-|---|---|---|---|
-| `--accent` | `#FFD400` | Edgerunners Yellow | Título, CTAs primários, inputs ativos, output cifrado, glow principal |
-| `--accent2` | `#FF2A6D` | Danger Pink | Erros, alertas, warnings, botão PURGE, decrypt danger states |
-| `--accent3` / `--accent4` | `#05D9E8` | Cyan Data | Output panel, labels de status, botões secundários, links, NODE ONLINE |
+Mobile reduz marca para 12px e 11px até 390px; título para `clamp(26px,8vw,32px)`; nav para 9px e 8px até 390px. Inputs e textareas mantêm `16px` CSS para leitura e para impedir zoom automático no iOS; labels e telemetria podem usar 8–10px.
 
-> **Regra de domínio**: cada cor de acento tem sua zona de responsabilidade na UI. Amarelo = ação de input. Cyan = dados de output/status. Pink = perigo/erro. Nunca misture dois acentos no mesmo componente.
+### Cantos e recortes
 
-### Status especial — verde de node ativo
+- `border-radius: 0` em todos os elementos estruturais e controles.
+- Marca: recorte diagonal por `clip-path`, com cortes de 22%.
+- Status: recortes de 10px em cantos opostos.
+- Painéis: recortes de 13px em cantos opostos no desktop.
+- Cards de Protocolo: recorte superior direito de 12px.
+- Em mobile, `.terminal-panel` remove `clip-path` para maximizar área útil.
 
-A bolinha `● SECURE NODE ONLINE` usa verde `#00FF88` exclusivamente para indicar que o sistema está online. Não é um quarto acento geral — é um indicador de estado pontual.
+### Sombras e glow
 
 ```css
-.status-main::before {
-  content: '● ';
-  color: #00ff88;
-  text-shadow: 0 0 8px rgba(0,255,136,0.85), 0 0 18px rgba(0,255,136,0.24);
-}
+--shadow-panel:
+  0 24px 60px rgba(0,0,0,.24),
+  inset 0 0 40px rgba(0,0,0,.16);
+
+--glow-brand: 0 0 22px rgba(255,212,0,.18);
+--glow-focus: 0 0 18px rgba(255,212,0,.055);
+--glow-cyan:  0 0 18px rgba(5,217,232,.08);
+--glow-pink:  0 0 16px rgba(255,42,109,.10);
+--glow-green: 0 0 9px #00FF88;
 ```
 
-### Text
-
-| Token | Hex | Uso |
-|---|---|---|
-| `--text` | `#D8D6C8` | Corpo de texto — levemente quente (bege) |
-| `--text-dim` | `#647080` | Placeholders, comentários, labels dim, metadados |
-
-### Glow recipes
-
-```css
---glow:      0 0 8px  rgba(255,212,0,  0.86),
-             0 0 20px rgba(255,212,0,  0.24),
-             0 0 32px rgba(5,217,232,  0.10);   /* amarelo + toque cyan */
-
---glow-cyan: 0 0 8px  rgba(5,217,232,  0.75),
-             0 0 20px rgba(5,217,232,  0.18);
-
---glow-pink: 0 0 8px  rgba(255,42,109, 0.8),
-             0 0 20px rgba(255,42,109, 0.2);
-```
+Glows são discretos e vinculados a estado. Não aplicar bloom global.
 
 ---
 
-## 03 — Typography
+## 03 — Shell da aplicação
 
-### Duas fontes, papéis distintos
+### Anatomia desktop
 
-A v2 introduz uma segunda fonte para criar hierarquia visual mais forte entre título e corpo, sem abandonar o feel monospace:
-
-| Fonte | Uso | Import |
-|---|---|---|
-| **Share Tech Mono** | Título `CYPHER_LINK_` — display, impacto visual | Google Fonts |
-| **JetBrains Mono** | Todo o resto — corpo, labels, inputs, outputs, botões | Google Fonts ou fontsource |
-
-```css
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-/* JetBrains Mono via fontsource/jetbrains-mono npm ou Google Fonts */
-```
-
-O título usa `Share Tech Mono` porque é mais condensada e blocuda — cria o impacto de logotype que `JetBrains Mono` (projetada para código, mais aberta) não consegue na mesma escala.
-
-### Escala tipográfica
-
-| Elemento | Tamanho | Fonte | Peso | Cor |
-|---|---|---|---|---|
-| `.terminal-title` (CYPHER_LINK_) | `clamp(1.7rem, 5vw, 3.2rem)` | Share Tech Mono | 400 | `--accent` amarelo + glow |
-| Panel titles (`> INPUT / ...`) | `0.75rem` | JetBrains Mono | 400 | `--accent3` cyan |
-| Labels de campo (`KEYWORD`, `MESSAGE`) | `0.70rem` | JetBrains Mono | 400 | `--text-dim` |
-| Input / textarea text | `0.95rem` | JetBrains Mono | 400 | `--accent` amarelo |
-| Output cifrado | `0.95rem` | JetBrains Mono | 400 | `--accent` amarelo |
-| Status badge | `0.75rem` | JetBrains Mono | 400 | `--accent3` cyan |
-| Uptime | `0.68rem` | JetBrains Mono | 400 | `--text-dim` |
-| Descrição header | `0.82rem` | JetBrains Mono | 400 | `--text-dim` |
-| Footer / warnings | `0.75rem` | JetBrains Mono | 400/700 | `--text-dim` / `--accent2` |
-| Botões | `0.75rem` | JetBrains Mono | 400 | acento do botão |
-
-### Regras tipográficas
-
-- `letter-spacing: 0.06em` no título; `0.08–0.12em` em labels UPPERCASE
-- `letter-spacing: 0.1em` nos botões — reforça o feel de comando
-- `line-height: 1.6` para texto corrido e description; `1.5` para textarea
-- Nunca use italic — terminais não têm italic
-- UPPERCASE para: panel titles, labels de campo, botões, status badge
-- O cursor `▊` ou `_` no título pisca com `animation: blink 1s steps(2) infinite`
-
----
-
-## 04 — Spacing & Layout
-
-### Container e grid
-
-| Propriedade | Valor |
-|---|---|
-| `.page` | `min-height: 100vh; display: grid; place-items: center; padding: 2rem` |
-| `.terminal` max-width | `1080px` — wide terminal, ocupa a tela |
-| `.terminal` padding | `1.5rem` |
-| `.terminal-grid` | `display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem` |
-| Alinhamento | Centralizado na viewport com `place-items: center` |
-
-O layout de duas colunas é a mudança estrutural mais importante da v2. Em desktop, input e output ficam lado a lado. Em mobile (`≤ 720px`), colapsa para coluna única.
-
-### Escala de espaçamento
-
-| Valor | Uso |
-|---|---|
-| `0.28rem` | Gap interno do status badge (linhas) |
-| `0.35rem` | Margin-bottom de labels |
-| `0.65rem` | Padding vertical de inputs |
-| `0.75rem` | Gap entre botões na `.btn-row` |
-| `1rem` | Padding dos painéis `.panel`; margin entre campos `.field` |
-| `1.25rem` | Gap do `.terminal-grid` |
-| `1.5rem` | Padding do `.terminal` |
-| `2rem` | Padding do `.page` |
-
-### Estrutura de painéis
-
-Os dois painéis têm **estilos de borda distintos** que sinalizam seu papel:
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  // CYPHER_LINK v1.0 — SECURE CHANNEL               [STATUS BADGE]  │
-│──────────────────────────────────────────────────────────────────────│
-│  CYPHER_LINK_▊                  Secure channel for...               │
-│──────────────────────────────────────────────────────────────────────│
-│                                                                      │
-│  ┌─ INPUT PANEL (amarelo) ──┐   ┌─ OUTPUT PANEL (cyan) ────────┐    │
-│  │ > INPUT / ENCRYPTION...  │   │ > OUTPUT / ENCODED...         │    │
-│  │                          │   │                               │    │
-│  │  KEYWORD                 │   │  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  │    │
-│  │  [neon-dragon__________] │   │  │ Imcnntro cnfjrmdno...    │  │    │
-│  │                          │   │  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘  │    │
-│  │  MESSAGE                 │   │                               │    │
-│  │  [Encontro confirmado... │   │  [ GENERATE LINK ]           │    │
-│  │   Leve o pacote...___]   │   └──────────────────────────────┘    │
-│  │                          │                                        │
-│  │  [ENCRYPT] [COPY] [PURGE]│                                        │
-│  └──────────────────────────┘                                        │
-│                                                                      │
-│  ! WARNING: messages intercepted...         // END OF LINE          │
+```text
+┌──────────────────────────── TOPBAR 76px ─────────────────────────────┐
+│ [MARK] CYPHER_LINK_ v2.0                         [● NODE][UPTIME]    │
+├──────── SIDEBAR 218px ─────┬──────────────── CONTENT ────────────────┤
+│ // CHANNEL                 │ // EYEBROW                              │
+│ 01 TRANSMITIR          TX  │ TÍTULO DO MÓDULO /                     │
+│ 02 RECEBER             RX  │ descrição                         SCORE │
+│ 03 PROTOCOLO           ::  │                                        │
+│                            │ painéis do módulo                       │
+│ ● RELAY / ACTIVE           │                                        │
+├────────────────────────────┴─────────────────────────────────────────┤
+│ GLOBAL FOOTER 36px                             // END OF LINE        │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### Bordas dos painéis
+- Shell ocupa viewport inteira; não usa card central.
+- Topbar é fixed.
+- Workspace inicia após topbar com `margin-top: 76px`.
+- Workspace usa `218px minmax(0,1fr)`.
+- Content usa `max-width: 1280px`, centralizado dentro da área principal.
+- Footer possui 36px e encerra shell visualmente.
+- App usa `overflow: hidden` no desktop; conteúdo precisa caber ou possuir scroll controlado.
 
-| Painel | Border | Box-shadow |
+### Tablet — até 1040px
+
+- Sidebar reduz de 218px para 178px.
+- Content usa padding horizontal de 28px.
+- Composer, receive layout e cards de protocolo viram uma coluna.
+- Output preserva contexto e aparece após input.
+
+### Mobile — até 760px
+
+```text
+┌──────────── FIXED HEADER 60px ────────────┐
+│ [MARK] CYPHER_LINK_              [● NODE] │
+├──────────── STICKY NAV 52px ──────────────┤
+│ TRANSMITIR TX │ RECEBER RX │ PROTOCOLO :: │
+├───────────────────────────────────────────┤
+│ EYEBROW                                   │
+│ TÍTULO / + descrição + status contextual │
+│                                           │
+│ painéis empilhados                        │
+├───────────────────────────────────────────┤
+│                         // END OF LINE   │
+└───────────────────────────────────────────┘
+```
+
+- Workspace vira bloco e inicia em 60px.
+- Nav vira sub-header sticky em `top: 60px`.
+- Content usa `padding: 24px 12px calc(42px + safe-area-bottom)`.
+- Painéis usam 13px de padding e perdem recortes diagonais.
+- Eyebrow, descrição, status contextual, contadores e métricas permanecem visíveis.
+- Footer oculta a telemetria e mantém somente `// END OF LINE`, alinhado ao final.
+- Não existe navegação inferior; nav permanece diretamente abaixo do header.
+- Não existe overflow horizontal planejado: três itens dividem largura igualmente.
+- A página possui scroll vertical natural; header e sub-header permanecem visíveis enquanto os painéis percorrem o viewport.
+
+---
+
+## 04 — Header
+
+### Desktop
+
+| Propriedade | Valor |
+|---|---|
+| Altura | 76px |
+| Position | `fixed; top: 0; inset-inline: 0` |
+| Z-index | 20 |
+| Padding | `0 30px` |
+| Background | `rgba(7,9,14,.84)` |
+| Backdrop | `blur(8px)` |
+| Border | `1px solid --border` na base |
+| Layout | Flex horizontal, `space-between`, centralizado verticalmente |
+
+Uma linha amarela de 118px fica na base esquerda com glow de 12px.
+
+#### Brand
+
+- Botão sem background/borda.
+- Marca de 36×36px em amarelo, símbolo escuro `Cᴸ` e pixel pink 5×5px.
+- Gap de 12px entre mark e nome.
+- Nome amarelo com glow discreto.
+- Versão 9px em `--text-faint`, alinhada ao topo.
+- Clique volta para Transmitir; conteúdo não compartilhado exige confirmação antes de ser descartado.
+
+#### Status
+
+- Desktop: `min-width: 386px`, altura 34px.
+- Fundo green 3.5%, borda green 30% e recorte de 10px.
+- Indicador circular de 6px com pulso de 1.8s.
+- Texto `SECURED NODE ONLINE`, separador e uptime.
+- Status fica à direita; não há outro acionador no header final.
+
+#### Scroll
+
+- Topbar permanece fixed durante scroll.
+- Deve reservar 76px no fluxo via margem do workspace.
+- O backdrop blur só existe no desktop; mobile usa fundo mais opaco.
+
+### Mobile
+
+| Propriedade | Valor |
+|---|---|
+| Altura | 60px |
+| Padding | `0 max(12px, env(safe-area-inset-left/right))` |
+| Background | `rgba(7,9,14,.96)` |
+| Backdrop | Nenhum |
+| Brand mark | 30×30px |
+| Brand name | 12px; 11px até 390px |
+| Status | 32×32px, somente indicador visual |
+
+- Versão fica oculta.
+- Texto, separador e uptime do status ficam ocultos.
+- Nome acessível do status permanece `Status da rede: online`.
+- Header usa `min-width: 0` nos filhos para evitar corte.
+- Linha amarela reduz para 76px e respeita safe area esquerda.
+
+---
+
+## 05 — Navegação
+
+### Desktop sidebar
+
+| Propriedade | Valor |
+|---|---|
+| Largura | 218px; 178px até 1040px |
+| Background | `rgba(8,11,17,.70)` |
+| Border | 1px `--border` à direita |
+| Padding | `34px 17px 22px` |
+| Comportamento | Persistente, não retrátil |
+| Section label | `// CHANNEL`, 9px, tracking `0.17em` |
+
+A sidebar não é fixed independentemente: pertence ao grid abaixo do topbar. O footer do relay fica no fim usando `margin-top: auto`.
+
+#### Nav item
+
+- Altura mínima: 50px.
+- Grid: `26px 1fr 18px`.
+- Conteúdo: índice, label principal e código `TX`, `RX` ou `::`.
+- Fonte: 11px; tracking `0.08em`.
+- Transição: 160ms.
+- Ícones tradicionais não são usados; os códigos terminais atuam como identificadores.
+
+#### Estados
+
+| Estado | Tratamento |
+|---|---|
+| Default | `--text-muted`, borda transparente |
+| Hover | `--text`, background branco 2% |
+| Active | amarelo, borda amarelo 32%, gradiente yellow 11% → 1.6% |
+| Active marker | inset amarelo de 2px à esquerda |
+| Focus-visible | outline amarelo 1px, offset 3px |
+
+O item ativo também colore índice e código. Estado não depende somente de cor: borda e posição do marcador mudam.
+
+### Mobile sub-header nav
+
+- Ativado em `≤760px`.
+- Sidebar vira grid de três colunas iguais.
+- Position sticky em `top: 60px`, z-index 19.
+- Altura mínima por item: 52px; 49px até 390px.
+- Label centralizada com o código `TX`, `RX` ou `::` abaixo.
+- Índices, `// CHANNEL` e relay ficam ocultos.
+- Separador vertical entre itens usa `--border-soft`.
+- Active ganha borda inferior amarela de 2px e inset glow superior.
+- Não há scroll horizontal; labels precisam caber entre 320px e 430px.
+- Touch target ocupa célula inteira, mínimo efetivo de 49px de altura.
+
+---
+
+## 06 — Telas e fluxos
+
+### Transmitir
+
+Título: `COMPOR SINAL /`.
+
+Desktop usa `1.14fr / 0.86fr`, gap 18px:
+
+- **ENCRYPTION PAYLOAD:** textarea com linhas numeradas, contador, keyword, SHOW/HIDE, geração de chave, CTA e Purge.
+- **ENCODED TRANSMISSION:** métricas, payload, Copy Payload, Generate Secure Link e warning.
+
+Fluxo:
+
+```text
+idle → editing → ready → staged → copied/shared
+                        └────────→ purge → idle
+```
+
+Mobile empilha input e output com gap de 12px. Linhas numeradas, contador `83/1024`, métricas `PAIR MAP`/`PAYLOAD` e `SIGNAL READY` permanecem. Apenas keyboard help pode ser removido. A ordem é:
+
+1. heading e descrição;
+2. badge `LOCAL CIPHER / PAIR//OFFGRID`, alinhado à direita;
+3. painel Encryption Payload completo;
+4. painel Encoded Transmission completo;
+5. warning;
+6. footer com `// END OF LINE`.
+
+No painel de entrada mobile, `GENERATE KEY` ocupa uma linha; `ENCRYPT & STAGE` ocupa a largura útil; `PURGE` aparece abaixo. No output, `COPY PAYLOAD` e `GENERATE SECURE LINK` dividem a mesma linha quando houver ao menos 340px úteis e empilham abaixo disso.
+
+### Receber
+
+Título: `RECEBER SINAL /`.
+
+- Painel Incoming Payload em cyan.
+- Textarea `ENCODED_SIGNAL`.
+- Campo `SHARED_KEYWORD`.
+- CTA `DECODE SIGNAL`.
+- Output `DECRYPTED MESSAGE` em verde.
+- Estado vazio: `NO DECODED SIGNAL_`.
+- Resultado válido: `INTEGRITY 100%` somente quando integridade for verificável.
+
+Mobile mantém eyebrow e descrição, apresenta `SCAN STATUS / NO TRACE` como faixa de largura total e empilha Incoming Payload antes de Decrypted Message. `LISTENING` e `INTEGRITY 100%` permanecem nos panel bars. Textarea, keyword, Decode Signal, empty state e Copy Decoded Message não podem ser omitidos.
+
+### Protocolo
+
+Título: `PROTOCOLO /`.
+
+Três cards:
+
+1. `PARES SIMÉTRICOS` — `Aa ⇄ Bb`.
+2. `LINK SEM A CHAVE` — `MSG → LINK`.
+3. `MESMO CAMINHO` — `2× = ORIG`.
+
+Cada card usa linha inferior semântica: amarelo, cyan e verde. Após cards:
+
+- bloco `OPSEC NOTE` em pink;
+- texto de segurança narrativa;
+- CTA `START TRANSMISSION >`.
+
+Cards empilham em tablet e mobile na ordem 01 → 02 → 03. No mobile, cada card mantém índice, diagrama, título, texto e linha inferior semântica. O OPSEC vira bloco vertical e `START TRANSMISSION >` ocupa a largura disponível abaixo do texto.
+
+---
+
+## 07 — Componentes
+
+### Terminal panel
+
+- Border: `1px solid --border`.
+- Background: superfície 90% + gradiente branco 2%.
+- Padding: 18px desktop; 13px mobile.
+- Shadow: `--shadow-panel`.
+- Marcador vertical: 1×74px com glow.
+- Pixel de estado: 4×4px no canto superior direito.
+- Input usa amarelo; output/receive usa cyan.
+
+### Panel bar
+
+- Min-height 27px.
+- Border-bottom `--border-soft`.
+- Padding-bottom 13px; margin-bottom 17px.
+- Kicker 9px, uppercase e tracking `0.13em`.
+- Mobile: min-height 22px, padding-bottom 10px, kicker 8px.
+
+### Textarea
+
+- Wrapper mínimo 258px desktop; 116px mobile em Transmitir e Receber.
+- Grid desktop: 32px para linhas + conteúdo.
+- Background `rgba(3,5,9,.70)`.
+- Focus-within: borda yellow 62% + glow.
+- Textarea 13px/1.75 desktop; 16px/1.55 mobile. A escala aparente compacta vem do viewport, não de fonte abaixo de 16px no controle editável.
+- Resize desativado em composição; permitido verticalmente no payload recebido.
+
+### Keyword field
+
+- Shell com 43px de altura.
+- Prompt `$` em green, 13px.
+- Input amarelo 11px, flexível e sem outline nativo.
+- Keyword mascarada por padrão.
+- SHOW/HIDE usa botão inline de 7px e borda esquerda.
+- Focus-within colore borda amarelo 56%.
+
+### Botões
+
+Base: cantos retos, uppercase, tracking `0.10em`, transição 150ms.
+
+| Variante | Visual | Hover |
 |---|---|---|
-| `.panel-input` | `1px solid rgba(255,212,0, 0.72)` | `0 0 8px rgba(255,212,0,0.16), 0 0 18px rgba(255,212,0,0.08)` |
-| `.panel-output` | `1px solid rgba(5,217,232, 0.82)` | `0 0 8px rgba(5,217,232,0.18), 0 0 18px rgba(5,217,232,0.10)` |
-| `.panel` (base) | `1px solid var(--border)` | `inset 0 0 24px rgba(0,0,0,0.2)` |
+| Primary | 47px, fundo amarelo, texto `#0B0C06` | `#FFE74D` + glow amarelo |
+| Secondary | borda/texto cyan | cyan-soft + glow cyan |
+| Link | borda/texto amarelo | yellow-soft + glow amarelo |
+| Danger | borda pink 42%, texto pink | pink-soft + glow pink |
 
-O terminal externo tem sombra longa para elevação:
+Mobile: primary 45px; danger 40px; ações de output usam duas colunas quando couberem e uma coluna abaixo de 340px úteis.
 
-```css
-.terminal {
-  box-shadow:
-    0 0 0 1px rgba(255,212,0, 0.035),
-    0 0 0 2px rgba(5,217,232, 0.018),
-    0 30px 80px rgba(0,0,0, 0.52);
-}
-```
+### Output
+
+- Métricas em duas colunas tanto no desktop quanto no mobile.
+- Área codificada: mínimo 297px desktop; 168px mobile.
+- Texto amarelo 12px/1.78; mobile 13px/1.6.
+- Border amarelo 34%; background com yellow 5.5%.
+- Output decodificado troca para green e mínimo de 362px desktop.
+
+### Warning strip
+
+- Grid `31px 1fr`.
+- Fundo pink-soft e borda pink 26%.
+- Ícone `!` em pink com glow.
+- Texto 8px/1.55; mobile 7px/1.45.
+- Até 390px, texto limita a 42px de altura.
+
+### Toast
+
+- Desktop: fixed, bottom 55px, right 24px.
+- Mobile: left/right 14px; bottom usa safe area.
+- Fundo green-black 96%, borda green 42%.
+- Entrada de 200ms.
+- Sucesso usa `role="status"`; erro deve usar `role="alert"` e pink.
+
+### Global footer
+
+- Desktop: 36px, padding horizontal 29px, telemetria 7px.
+- Mobile: mínimo 35px, padding 10×15px, conteúdo alinhado à direita.
+- Mobile oculta `ENCRYPTION: LOCAL`, `TRACE: DISABLED` e `PACKET LOSS: 0.0%`; exibe somente `// END OF LINE`.
+- End line usa green com glow de 8px.
 
 ---
 
-## 05 — Components
+## 08 — Responsividade
 
-### Terminal Header
+| Faixa | Header | Navegação | Conteúdo |
+|---|---|---|---|
+| `>1040px` | 76px | Sidebar 218px | Painéis em grid |
+| `761–1040px` | 76px | Sidebar 178px | Painéis empilhados |
+| `391–760px` | 60px | Sub-header sticky 52px | Padding 12px, painéis empilhados |
+| `≤390px` | 60px | Sub-header sticky 49px | Descrição visível, controles compactos e fontes editáveis de 16px |
+| `≤500px` | 60px | Igual | Status reduzido a 32px |
 
-O header tem três zonas horizontais separadas por `border-bottom: 1px solid --border`:
+### Regras de overflow e safe area
 
-```
-CYPHER_LINK_▊                              ┌─────────────────────┐
-                                           │ ● SECURE NODE ONLINE│
-Secure channel for encrypted messages.    │ NODE ID: CTX-7SIN   │
-Write a key, compose your message, and    │ UPTIME: 12:45:32    │
-generate a sha-able link.                 └─────────────────────┘
-```
+- Nenhum overflow horizontal entre 320px e 1440px.
+- Elementos flex/grid usam `min-width: 0`.
+- Header respeita safe areas laterais.
+- Content reserva `env(safe-area-inset-bottom)`.
+- Tabs dividem espaço igualmente; não usar carrossel ou scroll horizontal.
+- Sticky nav precisa preservar heading ao navegar por âncoras/foco.
 
-**Título `.terminal-title`:**
+---
 
-| Propriedade | Valor |
+## 09 — Acessibilidade e interação
+
+- Um `h1` por módulo; cards/painéis usam `h2` quando aplicável.
+- `nav` recebe nome `Navegação principal`.
+- Item ativo usa `aria-current="page"`.
+- Focus visible global: outline amarelo 1px, offset 3px.
+- Status possui nome acessível mesmo quando texto visual está oculto.
+- SHOW/HIDE anuncia `Exibir keyword` ou `Ocultar keyword`.
+- Inputs possuem labels persistentes.
+- Erros não dependem apenas de pink.
+- Indicadores online/ready incluem texto ou nome acessível.
+- `prefers-reduced-motion` reduz pulso, cursor e transições.
+- Zoom da página não pode ser bloqueado.
+
+### Teclado
+
+| Tecla | Ação |
 |---|---|
-| Font | Share Tech Mono, 400 |
-| Size | `clamp(1.7rem, 5vw, 3.2rem)` |
-| Color | `--accent` `#FFD400` |
-| text-shadow | `var(--glow)` — amarelo brilhante |
-| text-transform | `uppercase` |
-| letter-spacing | `0.06em` |
-| Cursor piscante | `▊` ou `_` com `animation: blink 1s steps(2) infinite` |
-
-**Status Badge `.status`:**
-
-| Propriedade | Valor |
-|---|---|
-| Border | `1px solid rgba(5,217,232, 0.9)` |
-| Background | `rgba(5,217,232, 0.06)` |
-| Box-shadow | `0 0 8px rgba(5,217,232,0.85), 0 0 20px rgba(5,217,232,0.24)` |
-| Padding | `0.55rem 0.8rem` |
-| Font-size | `0.75rem` |
-| Color | `--accent3` cyan |
-| Bolinha | `● ` prefixo verde `#00FF88` com glow verde |
-| Uptime | `0.68rem`, `--text-dim`, `letter-spacing: 0.08em` |
+| Enter | Cifra quando foco está no contexto permitido |
+| Shift+Enter | Nova linha na mensagem |
+| Enter no Receive | Tenta restaurar sinal |
+| Tab / Shift+Tab | Navega em ordem visual |
 
 ---
 
-### Panel Titles
+## 10 — Critérios de aceite
 
-```
-> INPUT / ENCRYPTION PAYLOAD
-> OUTPUT / ENCODED TRANSMISSION
-```
+### Identidade
 
-| Propriedade | Valor |
-|---|---|
-| Prefixo `> ` | Cor `--accent3` cyan com `var(--glow-cyan)` |
-| Texto | `--accent3` cyan, UPPERCASE, `0.75rem`, `letter-spacing: 0.12em` |
-| Margin-bottom | `1rem` |
+- [ ] Tokens correspondem exatamente à seção 02.
+- [ ] Nenhum componente estrutural usa border-radius.
+- [ ] Recortes, grid, ruído e glows permanecem discretos.
+- [ ] Amarelo, cyan, pink e green mantêm papéis semânticos.
 
----
+### Header
 
-### Input Fields (Keyword + Message)
+- [ ] Desktop mede 76px e permanece fixed.
+- [ ] Mobile mede 60px e não corta marca/status.
+- [ ] Workspace reserva altura correta do header.
+- [ ] Status mantém nome acessível no modo compacto.
 
-```
-  KEYWORD
-  ──────────────────────────────────────────
-  neon-dragon▊
+### Navegação
 
-  MESSAGE
-  ──────────────────────────────────────────
-  Encontro confirmado na estação 7.
-  Leve o pacote e aguarde instruções.
-  Confidencial.▊
-```
+- [ ] Sidebar possui 218px ou 178px conforme breakpoint.
+- [ ] Sidebar não é retrátil.
+- [ ] Mobile transforma sidebar em sub-header sticky.
+- [ ] Tabs medem 52px ou 49px e não geram overflow.
+- [ ] Tabs mobile preservam os códigos `TX`, `RX` e `::` abaixo dos labels.
+- [ ] Hover, active e focus são visualmente distintos.
 
-| Propriedade | Valor |
-|---|---|
-| `background` | `transparent` |
-| `border` | `none` |
-| `border-bottom` | `1px solid --border` default |
-| `border-bottom` focus | `1px solid --accent` amarelo |
-| `box-shadow` focus | `0 2px 0 -1px var(--accent)` |
-| `color` | `--accent` `#FFD400` amarelo |
-| `placeholder color` | `rgba(255,212,0, 0.45)` — amarelo 45% opaco |
-| `caret-color` | `--accent` amarelo |
-| `font` | JetBrains Mono `0.95rem` |
-| `padding` | `0.65rem 0` |
-| Label acima | `--text-dim`, `0.70rem`, UPPERCASE, `letter-spacing: 0.08em` |
-| Textarea `min-height` | `180px` desktop; `150px` mobile |
-| Textarea `line-height` | `1.5` |
-| Textarea `resize` | `vertical` (diferente da v1 que era `none`) |
+### Telas
 
-**Atributos HTML obrigatórios:**
-```html
-autocomplete="off"
-autocorrect="off"
-autocapitalize="off"
-spellcheck="false"
-```
+- [ ] Transmitir, Receber e Protocolo preservam estado ao alternar.
+- [ ] Input e output empilham em até 1040px.
+- [ ] Link recebido abre Receber com payload preenchido.
+- [ ] Mobile preserva descrições, contadores, status e métricas dos painéis.
+- [ ] Footer mobile exibe somente `// END OF LINE`, alinhado ao final.
+- [ ] Nenhum controle editável mobile usa fonte menor que 16px.
+
+### Viewports de validação
+
+- [ ] 320×568
+- [ ] 375×812
+- [ ] 390×844
+- [ ] 430×932
+- [ ] 768×1024
+- [ ] 1024×768
+- [ ] 1280×800
+- [ ] 1440×900
 
 ---
 
-### Botões — três variantes
-
-A v2 tem três tipos de botão com cores distintas, todos na `.btn-row` flex:
-
-```
-[ ENCRYPT ]    [ COPY ]    [ PURGE ]
-  amarelo        cyan         pink
-```
-
-**Specs compartilhadas:**
-
-| Propriedade | Valor |
-|---|---|
-| `background` | `transparent` |
-| `font` | JetBrains Mono, `0.75rem` |
-| `letter-spacing` | `0.1em` |
-| `text-transform` | uppercase |
-| `padding` | `0.8rem 1rem` |
-| `transition` | `all 0.15s` |
-| Border-radius | **0** — sem arredondamento |
-
-**`.btn-primary` — `[ ENCRYPT ]` — amarelo:**
-
-| Estado | Estilos |
-|---|---|
-| Normal | `border: 1px solid --accent; color: --accent` |
-| Hover | `background: --accent; color: --bg; box-shadow: var(--glow)` |
-
-**`.btn-secondary` — `[ COPY ]` / `[ GENERATE LINK ]` — cyan:**
-
-| Estado | Estilos |
-|---|---|
-| Normal | `border: 1px solid --accent3; color: --accent3` |
-| Hover | `background: --accent3; color: --bg; box-shadow: var(--glow-cyan)` |
-
-**`.btn-danger` — `[ PURGE ]` — pink:**
-
-| Estado | Estilos |
-|---|---|
-| Normal | `border: 1px solid --accent2; color: --accent2` |
-| Hover | `background: --accent2; color: --bg; box-shadow: var(--glow-pink)` |
-
-Em mobile todos os botões viram `width: 100%` e o `.btn-row` usa `flex-direction: column`.
-
----
-
-### Output Block — `.output`
-
-```
-┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-  Imcnntro cnfjrmdno po estnçio 7.
-  Mve n pctn e ogpcrde ipstrpções.
-  Cnffdensinl.
-└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-```
-
-| Propriedade | Valor |
-|---|---|
-| `border` | `1px dashed rgba(255,212,0, 0.35)` — dashed, não solid |
-| `min-height` | `252px` |
-| `padding` | `1rem` |
-| `color` | `--accent` amarelo |
-| `line-height` | `1.6` |
-| `white-space` | `pre-wrap` |
-| `word-break` | `break-word` |
-| Background | gradiente sutil: `linear-gradient(135deg, rgba(255,212,0,0.032)...) + rgba(255,212,0,0.014)` |
-
-O output usa **borda dashed** propositalmente — transmite a ideia de zona temporária, dados em trânsito, não uma caixa definitiva.
-
----
-
-### Terminal Footer
-
-```
-! WARNING: messages intercepted without a valid keyword cannot be decrypted.
-                                                              // END OF LINE
-```
-
-| Elemento | Cor | Estilo |
-|---|---|---|
-| `! WARNING:` label | `--accent2` pink | `font-weight: 700` + glow pink |
-| Texto do warning | `--accent2` pink | normal |
-| `// END OF LINE` | `--accent` amarelo | `text-shadow: var(--glow)` |
-| Container | `--text-dim` | `0.75rem`, `border-top: 1px solid --border` |
-
----
-
-### Palette Display — rodapé visual
-
-O CSS inclui um display da paleta no rodapé com swatches:
-
-```css
-.palette {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.4rem;
-}
-.swatch { min-height: 22px; border: 1px solid rgba(255,255,255,0.08); }
-```
-
-Sete swatches: `--bg`, `--surface`, `--border`, `--accent`, `--accent2`, `--accent3/4`, texto. É um elemento diegético — parece o sistema exibindo sua própria paleta de diagnóstico.
-
----
-
-## 06 — Effects & Animation
-
-### Scanline — passivo, sutil
-
-```css
-.terminal::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.05) 2px,   /* 0.05 na v2, mais presente que v1 */
-    rgba(0, 0, 0, 0.05) 4px
-  );
-  pointer-events: none;
-}
-```
-
-### Cursor piscante no título
-
-```css
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.cursor-yellow {
-  color: var(--accent);
-  text-shadow: var(--glow);
-  animation: blink 1s steps(2) infinite;
-}
-```
-
-O cursor faz parte do título na marcação HTML: `CYPHER_LINK<span class="cursor-yellow">_</span>`
-
-### Glow — cada acento tem seu recipe
-
-| Elemento | Glow recipe |
-|---|---|
-| Input focus (border-bottom) | `box-shadow: 0 2px 0 -1px var(--accent)` |
-| `.btn-primary` hover | `var(--glow)` — amarelo + toque cyan |
-| `.btn-secondary` hover | `var(--glow-cyan)` — cyan |
-| `.btn-danger` hover | `var(--glow-pink)` — pink |
-| `.panel-input` | `0 0 8px rgba(255,212,0,0.16), 0 0 18px rgba(255,212,0,0.08)` — sempre visível (não só hover) |
-| `.panel-output` | `0 0 8px rgba(5,217,232,0.18), 0 0 18px rgba(5,217,232,0.10)` — sempre visível |
-| `.status` badge | `0 0 8px rgba(5,217,232,0.85), 0 0 20px rgba(5,217,232,0.24)` |
-| `.status-main` bolinha | glow verde `rgba(0,255,136,...)` |
-| `! WARNING` text | `0 0 6px rgba(255,42,109,0.85), 0 0 14px rgba(255,42,109,0.34)` |
-
-> **Diferença da v1:** na v2 os painéis têm glow **permanente** (não só em hover) porque são zonas funcionais fixas, não elementos interativos transitórios.
-
-### Animações de estado dos botões
-
-| Animação | Especificação |
-|---|---|
-| Copy success | Texto `[ COPY ]` → `[ COPIED ✓ ]` por 2000ms |
-| Generate Link | Texto `[ GENERATE LINK ]` → `[ LINK COPIED ✓ ]` por 2000ms |
-| Purge / Clear | Limpa os campos — sem animação de transição, imediato |
-| Duração máxima | 300ms para transições visuais (exceto feedback de estado) |
-
-### Glitch effect no título — hover restrito
-
-```css
-@keyframes glitch {
-  0%   { text-shadow: var(--glow); }
-  20%  { text-shadow: -2px 0 #FF2A6D, 2px 0 #05D9E8, var(--glow); }
-  40%  { text-shadow:  2px 0 #FF2A6D, -2px 0 #05D9E8; }
-  60%  { text-shadow: -2px 0 #FFD400; }
-  80%  { text-shadow:  2px 0 #05D9E8; }
-  100% { text-shadow: var(--glow); }
-}
-```
-
-- Apenas em `.terminal-title:hover`
-- Duração: `200ms`, `animation-iteration-count: 1`
-- Usa as três cores de acento no offset — amarelo, cyan, pink
-- **NÃO aplicar** em inputs, outputs ou botões
-
----
-
-## 07 — Mobile & Responsive
-
-### Breakpoint único: 720px
-
-A v2 tem um breakpoint principal em `720px` (diferente dos múltiplos da v1):
-
-```css
-@media (max-width: 720px) {
-  .page             { padding: 1rem; align-items: stretch; }
-  .terminal         { padding: 1rem; }
-  .terminal-header  { flex-direction: column; }
-  .status           { white-space: normal; width: 100%; }
-  .terminal-grid    { grid-template-columns: 1fr; }  /* colapsa para 1 coluna */
-  textarea          { min-height: 150px; }
-  .btn-row          { flex-direction: column; }
-  .btn-primary,
-  .btn-secondary,
-  .btn-danger       { width: 100%; }
-}
-```
-
-Em mobile, a sequência visual de cima para baixo é:
-
-1. Header com título + status badge (empilhados)
-2. Input panel (keyword + message + botões)
-3. Output panel (output cifrado + generate link)
-4. Footer com warning
-
-### Comportamentos específicos de mobile
-
-- `min-height: 48px` em todos os botões para área de toque
-- `font-size: 0.95rem` nos inputs — acima de 16px, evita zoom iOS
-- `align-items: stretch` no `.page` — terminal ocupa toda a largura
-- Status badge: `white-space: normal; width: 100%` — quebra texto em vez de overflow
-- `resize: vertical` na textarea é mantido — útil em mobile landscape
-
-### Acessibilidade
-
-- Contraste: `#FFD400` sobre `#0F111A` — ratio ~10:1, passa WCAG AAA
-- Contraste: `#05D9E8` sobre `#0F111A` — ratio ~8:1, passa WCAG AAA
-- Focus visible: `border-bottom: 1px solid --accent` customizado em inputs
-- `@media (prefers-reduced-motion)` — desativa glitch e cursor blink, mantém transições de cor
-
----
-
-## 08 — CSS Variables — Referência Completa
-
-```css
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-* { box-sizing: border-box; }
-
-:root {
-  /* Backgrounds */
-  --bg:       #080A0F;
-  --surface:  #0F111A;
-  --border:   #1B2230;
-
-  /* Accents */
-  --accent:   #FFD400;   /* amarelo Edgerunners — ação / input */
-  --accent2:  #FF2A6D;   /* pink danger — erros / purge / alertas */
-  --accent3:  #05D9E8;   /* cyan — output / status / links */
-  --accent4:  #05D9E8;   /* cyan secundário (alias de accent3) */
-
-  /* Text */
-  --text:     #D8D6C8;
-  --text-dim: #647080;
-
-  /* Fonts */
-  --font:     'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  /* Share Tech Mono — apenas para .terminal-title */
-
-  /* Glow recipes */
-  --glow:      0 0 8px  rgba(255, 212, 0,   0.86),
-               0 0 20px rgba(255, 212, 0,   0.24),
-               0 0 32px rgba(5,   217, 232, 0.10);
-
-  --glow-cyan: 0 0 8px  rgba(5,   217, 232, 0.75),
-               0 0 20px rgba(5,   217, 232, 0.18);
-
-  --glow-pink: 0 0 8px  rgba(255, 42,  109, 0.8),
-               0 0 20px rgba(255, 42,  109, 0.2);
-}
-```
-
----
-
-## 09 — Prompts para Ferramentas de Design AI
-
-### Prompt principal — visão geral completa
-
-Cole no Claude Artifacts, v0, Bolt ou qualquer ferramenta de design AI:
-
-```
-Design a cyberpunk terminal cipher tool called CYPHER_LINK.
-
-PALETTE:
-- Background: #080A0F (near-black, slightly blue)
-- Surface: #0F111A
-- Border: #1B2230
-- Primary accent: #FFD400 (Edgerunners yellow) — inputs, CTAs, output text
-- Danger accent: #FF2A6D (hot pink) — errors, purge button, warnings
-- Data accent: #05D9E8 (cyan) — output panel, status, secondary buttons
-- Body text: #D8D6C8 | Dim text: #647080
-
-TYPOGRAPHY:
-- Title font: Share Tech Mono (Google Fonts), weight 400, uppercase
-- Everything else: JetBrains Mono
-- No italic anywhere. Monospace only.
-
-LAYOUT (desktop):
-- Full-width terminal container, max-width 1080px, centered
-- Two-column grid inside: INPUT panel left, OUTPUT panel right, gap 1.25rem
-- Terminal has subtle scanline overlay (repeating-linear-gradient)
-- Body background: four radial gradients in corners (yellow top-left, cyan bottom-right,
-  pink 80%/12%, cyan 12%/85%) creating atmospheric glow without solid color
-
-HEADER (inside terminal):
-- Top pseudo-element: "// CYPHER_LINK v1.0 — SECURE CHANNEL" in dim text
-- Title "CYPHER_LINK_" in Share Tech Mono, #FFD400, with yellow glow text-shadow
-  The trailing underscore blinks with CSS animation (steps(2), 1s, infinite)
-- Description text below title in dim color
-- Status badge top-right: border + background cyan, "● SECURE NODE ONLINE" where
-  the ● is green (#00FF88) with green glow. Below: "NODE ID: CTX-7SIN" and
-  "UPTIME: 12:45:32" in dim text
-
-INPUT PANEL (left):
-- Border: 1px solid rgba(255,212,0,0.72) + yellow box-shadow glow
-- Panel title: "> INPUT / ENCRYPTION PAYLOAD" in cyan uppercase
-- Fields: KEYWORD (single line input) and MESSAGE (textarea, min-height 180px)
-- Labels dim uppercase. Input text and placeholder in yellow (#FFD400).
-- Input focus: border-bottom turns yellow + subtle glow
-- Three buttons in a row: [ENCRYPT] yellow, [COPY] cyan, [PURGE] pink
-- All buttons: transparent bg, 1px solid border in their accent color,
-  hover fills background with accent + glow. No border-radius.
-
-OUTPUT PANEL (right):
-- Border: 1px solid rgba(5,217,232,0.82) + cyan box-shadow glow
-- Panel title: "> OUTPUT / ENCODED TRANSMISSION" in cyan uppercase
-- Output area: min-height 252px, border 1px dashed rgba(255,212,0,0.35),
-  yellow text, pre-wrap, subtle yellow gradient background tint
-- [GENERATE LINK] button below output: full-width, cyan accent
-
-FOOTER:
-- border-top separator
-- Left: "! WARNING:" in bold hot pink with pink glow + warning text
-- Right: "// END OF LINE" in yellow with yellow glow
-- Optional: 7-cell color palette swatch strip (diagnostic display)
-
-MOBILE (≤ 720px):
-- Single column layout, panels stack vertically
-- Header stacks title above status badge
-- All buttons become full-width
-- Textarea min-height reduces to 150px
-```
-
-### Prompt — decrypt view
-
-```
-Same CYPHER_LINK v2 design (yellow/cyan/pink palette, Share Tech Mono title,
-two-column layout at 1080px).
-
-Header changes to "// INCOMING TRANSMISSION" instead of secure channel text.
-Status badge changes to warning state: "● SIGNAL INTERCEPTED" in pink (#FF2A6D).
-
-Left panel shows:
-- Label "ENCRYPTED MESSAGE" with the cipher text in dim color (#647080) — unreadable
-- KEYWORD input for decryption key (same yellow styling)
-- [DECRYPT] button in pink (#FF2A6D) accent instead of yellow
-
-Right panel shows:
-- Output area empty until decryption runs
-- After decryption: text appears in yellow (#FFD400) with fade-in animation
-
-Footer warning changes to:
-"! CAUTION: keyword mismatch will produce corrupted output — verify before sharing."
-```
-
-### Prompt — botões isolados (três variantes)
-
-```
-Create three cyberpunk terminal button variants for CYPHER_LINK:
-
-Shared specs:
-- Font: JetBrains Mono, 0.75rem, letter-spacing 0.1em, uppercase
-- Background: transparent always (default). Fills on hover.
-- Padding: 0.8rem 1rem. No border-radius. Transition: all 0.15s.
-
-[ENCRYPT] — Primary / Yellow:
-- Default: border 1px solid #FFD400, color #FFD400
-- Hover: background #FFD400, color #080A0F,
-  box-shadow: 0 0 8px rgba(255,212,0,0.86), 0 0 20px rgba(255,212,0,0.24)
-
-[COPY] / [GENERATE LINK] — Secondary / Cyan:
-- Default: border 1px solid #05D9E8, color #05D9E8
-- Hover: background #05D9E8, color #080A0F,
-  box-shadow: 0 0 8px rgba(5,217,232,0.75), 0 0 20px rgba(5,217,232,0.18)
-
-[PURGE] — Danger / Pink:
-- Default: border 1px solid #FF2A6D, color #FF2A6D
-- Hover: background #FF2A6D, color #080A0F,
-  box-shadow: 0 0 8px rgba(255,42,109,0.8), 0 0 20px rgba(255,42,109,0.2)
-```
-
-### Prompt — output block isolado
-
-```
-Create the cipher output block for CYPHER_LINK v2.
-
-Container specs:
-- Border: 1px dashed rgba(255,212,0,0.35) — dashed, not solid
-- Min-height: 252px. Padding: 1rem.
-- Background: linear-gradient(135deg, rgba(255,212,0,0.032), transparent 42%)
-              + rgba(255,212,0,0.014) base tint
-- Text color: #FFD400 (yellow). Font: JetBrains Mono. White-space: pre-wrap.
-- Line-height: 1.6
-
-Below the output:
-- [GENERATE LINK] button full-width, cyan (#05D9E8) accent.
-  On click: changes text to [LINK COPIED ✓] for 2 seconds then reverts.
-
-The dashed border is intentional — signals temporary/in-transit data state.
-```
-
----
-
-```
-// END OF TRANSMISSION — CYPHER_LINK Design Handoff v2.0
+```text
+// END OF VISUAL SPECIFICATION — CYPHER_LINK v2
 ```
