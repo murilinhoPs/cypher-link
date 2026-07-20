@@ -2,6 +2,10 @@
   "name": "cypher-link",
   "version": "1.0.0",
   "description": "Cyberpunk message cipher tool",
+  "scripts": {
+    "dev": "shadow-cljs watch app",
+    "build": "shadow-cljs release app"
+  },
   "dependencies": {
     "react":     "^18.2.0",
     "react-dom": "^18.2.0"
